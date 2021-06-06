@@ -20,15 +20,10 @@ public class ServerVirtualFactory {
         do {
             //Wait for client...
             Socket client = serverSocket.accept();
-
-            System.out.println("\nNew client accepted.\n");
-
-            //Create a thread to handle communication with
-            //this client and pass the constructor for this
-            //thread a reference to the relevant socket...
+            System.out.println("\nNew client accepted.");
             ClientHandler handler = new ClientHandler(client);
+            handler.start();
 
-            handler.start();//As usual, this method calls run.
         } while (true);
     }
 }

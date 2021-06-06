@@ -12,13 +12,14 @@ public class LoginForm extends JFrame
     private final Container c;
     private final JTextField tfPass;
     private final JButton login;
+    private JLabel result;
     private FormObserver observer;
 
     // constructor, to initialize the components
     // with default values.
     public LoginForm() {
         setTitle("Planner Login Form");
-        setBounds(300, 90, 550, 350);
+        setBounds(300, 90, 550, 400);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setResizable(false);
 
@@ -61,7 +62,19 @@ public class LoginForm extends JFrame
         login.setLocation(250, 250);
         login.addActionListener(this);
         c.add(login);
+
+        result = new JLabel("");
+        result.setFont(new Font("Arial", Font.PLAIN, 10));
+        result.setSize(300, 20);
+        result.setLocation(100, 300);
+        c.add(result);
         setVisible(true);
+    }
+
+    public void setResult(boolean res) {
+        if (!res) {
+            result.setText("Incorrect username or password");
+        }
     }
 
     public void actionPerformed(ActionEvent e) {
