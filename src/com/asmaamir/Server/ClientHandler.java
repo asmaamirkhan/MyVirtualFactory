@@ -1,6 +1,7 @@
 package com.asmaamir.Server;
 
 import com.asmaamir.Server.entities.Machine;
+import com.asmaamir.Server.entities.Order;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -14,6 +15,7 @@ import java.util.Scanner;
 
 class ClientHandler extends Thread {
     private static ArrayList<Machine> aliveMachines = new ArrayList<>();
+    private static ArrayList<Order> activeOrders = new ArrayList<>();
     private String SPLITTER = ",";
     private Socket client;
     private Scanner input;
@@ -53,6 +55,17 @@ class ClientHandler extends Thread {
         return result;
     }
 
+    public static String getWaitingOrders() {
+        String result = "";
+        for (Order order : activeOrders) {
+            System.out.println(order.toString());
+            result += order.toString() + "&";
+        }
+        if (result.length() > 0)
+            result = result.substring(0, result.length() - 1);
+        return result;
+    }
+
     public static String getMachineByID(String id) {
         for (Machine machine : aliveMachines) {
             if (machine.getID().equals(id)) {
@@ -60,6 +73,16 @@ class ClientHandler extends Thread {
             }
         }
         return "";
+    }
+
+    public void registerMachine(String data) {
+        Machine m = new Machine(data);
+        aliveMachines.add(m);
+    }
+
+    public void registerOrder(String data) {
+        Order order = new Order(data);
+        activeOrders.add(order);
     }
 
     public void parseMessage(String message) {
@@ -142,8 +165,7 @@ class ClientHandler extends Thread {
                 if (clientType == 1) { // machine
                     if (opCode.equals("register")) {
                         String rawData = getData(received);
-                        Machine m = new Machine(rawData);
-                        aliveMachines.add(m);
+                        registerMachine(rawData);
                         output.println(constructResponse(200, "" + clientType));
                     }
                 } else if (clientType == 2) { //planner
@@ -162,6 +184,15 @@ class ClientHandler extends Thread {
                         String id = getData(received);
                         String result = getMachineByID(id);
                         output.println(constructResponse(200, result));
+                    } else if (opCode.equals("getWaitingOrders")) {
+                        String result = getWaitingOrders();
+                        output.println(constructResponse(200, result));
+                    } else if (opCode.equals("setNewOrder")) {
+                        System.out.println(received);
+                        String rawData = getData(received);
+                        System.out.println(rawData);
+                        registerOrder(rawData);
+                        output.println(constructResponse(200, "order done"));
                     }
 
                 }

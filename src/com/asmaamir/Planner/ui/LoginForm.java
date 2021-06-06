@@ -1,4 +1,4 @@
-package com.asmaamir.Planner;
+package com.asmaamir.Planner.ui;
 
 import javax.swing.*;
 import java.awt.*;

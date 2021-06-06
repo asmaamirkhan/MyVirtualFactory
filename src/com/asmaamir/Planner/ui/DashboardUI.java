@@ -1,4 +1,4 @@
-package com.asmaamir.Planner;
+package com.asmaamir.Planner.ui;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,7 +21,7 @@ public class DashboardUI extends JFrame implements ActionListener {
     // constructor, to initialize the components
     // with default values.
     public DashboardUI() {
-        setTitle("Planner Login Form");
+        setTitle("Dashboard");
         setBounds(300, 90, 800, 500);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setResizable(false);

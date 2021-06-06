@@ -10,11 +10,11 @@ public class Order {
     public Order(String data) {
         String[] split = data.split(";");
         Arrays.sort(split);
-        //  id type duration
+        //  duration id type
         System.out.println(data);
-        setId(split[0].split("\\?")[1]);
-        setType(split[1].split("\\?")[1]);
-        setDuration(split[2].split("\\?")[1]);
+        setDuration(split[0].split("\\?")[1]);
+        setId(split[1].split("\\?")[1]);
+        setType(split[2].split("\\?")[1]);
     }
 
     public String getId() {

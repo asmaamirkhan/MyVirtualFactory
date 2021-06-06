@@ -1,5 +1,9 @@
 package com.asmaamir.Planner;
 
+import com.asmaamir.Planner.ui.DashboardUI;
+import com.asmaamir.Planner.ui.LoginForm;
+import com.asmaamir.Planner.ui.OrderForm;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
@@ -76,12 +80,13 @@ public class PlannerClient {
             //System.out.println("\nSERVER> " + response);
             if (response.startsWith("code:200")) {//Set up stream for keyboard entry...
                 DashboardUI ui = new DashboardUI();
-                String[] aliveIDs = response.split(",")[1].split(":")[1].split("&");
+                if (response.split(",")[1].split(":").length > 1) {
+                    String[] aliveIDs = response.split(",")[1].split(":")[1].split("&");
+                    ui.setAliveIDs(aliveIDs);
+                    System.out.println(response.split(",")[1]);
+                }
 
-                System.out.println(response.split(",")[1]);
 
-
-                ui.setAliveIDs(aliveIDs);
                 ui.setFormObserver(new DashboardUI.FormObserver() {
                     @Override
                     public void onGetAliveMachinesClicked() {
@@ -125,14 +130,46 @@ public class PlannerClient {
 
                     @Override
                     public void onGetWaitingOrdersClicked() {
+                        //networkOutput.println(constructMessage("getWaitingOrders"));
+                        //System.out.println("res:" + networkInput.nextLine());
                         networkOutput.println(constructMessage("getWaitingOrders"));
-                        System.out.println("res:" + networkInput.nextLine());
+                        String response = networkInput.nextLine();
+                        System.out.println(response);
+                        String[] result = response.split(",")[1].split(":")[1].split("&");
+                        String output = "";
+                        System.out.println("len: " + result.length);
+                        for (String str : result) {
+                            System.out.println(str);
+                            String[] temp = str.split(";");
+                            for (String s : temp) {
+                                output += s.split("\\?")[0] + ": ";
+                                output += s.split("\\?")[1];
+                                output += "\n";
+                            }
+                            output += "------------\n";
+                        }
+                        System.out.println("res:" + output);
+
+                        ui.setTextAreaContent(output);
                     }
 
                     @Override
                     public void onSetNewOrderClicked() {
-                        networkOutput.println(constructMessage("setNewOrder"));
-                        System.out.println("res:" + networkInput.nextLine());
+                        OrderForm orderForm = new OrderForm();
+                        //openForm();
+                        //System.out.println("res:" + networkInput.nextLine());
+                        orderForm.setFormObserver(new OrderForm.FormObserver() {
+                            @Override
+                            public void onSubmit(String id, String type, String duration) {
+                                String data = "id?" + id;
+                                data += ";type?" + type;
+                                data += ";duration?" + duration;
+                                networkOutput.println(constructMessage("setNewOrder", data));
+                                // TODO: parse response
+                                String response = networkInput.nextLine();
+                                orderForm.closeForm();
+                            }
+                        });
                     }
 
                     @Override
@@ -154,6 +191,10 @@ public class PlannerClient {
         } catch (IOException ioEx) {
             ioEx.printStackTrace();
         }
+    }
+
+    private void openForm() {
+        OrderForm orderForm = new OrderForm();
     }
 
     private void closeSocket() {
