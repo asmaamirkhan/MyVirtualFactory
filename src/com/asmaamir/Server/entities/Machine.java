@@ -1,4 +1,4 @@
-package com.asmaamir.Server;
+package com.asmaamir.Server.entities;
 
 import java.util.Arrays;
 

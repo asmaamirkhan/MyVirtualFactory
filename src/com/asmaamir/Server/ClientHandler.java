@@ -1,5 +1,7 @@
 package com.asmaamir.Server;
 
+import com.asmaamir.Server.entities.Machine;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
