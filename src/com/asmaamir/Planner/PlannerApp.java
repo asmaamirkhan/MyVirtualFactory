@@ -8,7 +8,7 @@ public class PlannerApp {
 
         //MCForm f = new MCForm();
         PlannerClient client = new PlannerClient();
-        client.sendMessages();
+        //client.sendMessages();
     }
 
 
