@@ -10,27 +10,16 @@ class MachineForm
         extends JFrame
         implements ActionListener {
 
+    private final JTextField tfName;
     // Components of the Form
-    private Container c;
-    private JLabel title;
-    private JLabel name;
-    private JTextField tfName;
-    private JLabel id;
-    private JTextField tfID;
-    private JLabel type;
-    private JComboBox cbType;
-    private JLabel speed;
-    private JTextField tfSpeed;
-    private JLabel add;
-    private JTextArea tadd;
-    private JCheckBox term;
-    private JButton sub;
-    private JButton reset;
-    private JButton close;
-    private JTextArea tout;
-    private JLabel res;
-    private JLabel resLive;
-    private JTextArea resadd;
+    private final Container c;
+    private final JTextField tfID;
+    private final JComboBox cbType;
+    private final JTextField tfSpeed;
+    private final JButton sub;
+    private final JButton reset;
+    private final JButton close;
+    private final JLabel resLive;
 
     private String types[] = {"CNC", "DOKUM", "KILIF", "KAPLAMA"};
     private FormObserver observer;
@@ -46,13 +35,13 @@ class MachineForm
         c = getContentPane();
         c.setLayout(null);
 
-        title = new JLabel("Machine Type Client Form");
+        JLabel title = new JLabel("Machine Type Client Form");
         title.setFont(new Font("Arial", Font.PLAIN, 30));
         title.setSize(500, 30);
         title.setLocation(100, 30);
         c.add(title);
 
-        name = new JLabel("Name");
+        JLabel name = new JLabel("Name");
         name.setFont(new Font("Arial", Font.PLAIN, 20));
         name.setSize(100, 20);
         name.setLocation(100, 100);
@@ -64,7 +53,7 @@ class MachineForm
         tfName.setLocation(200, 100);
         c.add(tfName);
 
-        id = new JLabel("ID");
+        JLabel id = new JLabel("ID");
         id.setFont(new Font("Arial", Font.PLAIN, 20));
         id.setSize(100, 20);
         id.setLocation(100, 150);
@@ -77,7 +66,7 @@ class MachineForm
         c.add(tfID);
 
 
-        type = new JLabel("Type");
+        JLabel type = new JLabel("Type");
         type.setFont(new Font("Arial", Font.PLAIN, 20));
         type.setSize(100, 20);
         type.setLocation(100, 200);
@@ -89,7 +78,7 @@ class MachineForm
         cbType.setLocation(200, 200);
         c.add(cbType);
 
-        speed = new JLabel("Speed");
+        JLabel speed = new JLabel("Speed");
         speed.setFont(new Font("Arial", Font.PLAIN, 20));
         speed.setSize(100, 20);
         speed.setLocation(100, 250);
@@ -101,7 +90,7 @@ class MachineForm
         tfSpeed.setLocation(200, 250);
         c.add(tfSpeed);
 
-        res = new JLabel("Status");
+        JLabel res = new JLabel("Status");
         res.setFont(new Font("Arial", Font.PLAIN, 10));
         res.setSize(100, 20);
         res.setLocation(100, 300);
