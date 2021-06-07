@@ -20,7 +20,7 @@ class MachineForm
     private final JButton reset;
     private final JButton close;
     private final JLabel resLive;
-
+    private final JLabel statusLive;
     private String types[] = {"CNC", "DOKUM", "KILIF", "KAPLAMA"};
     private FormObserver observer;
 
@@ -90,16 +90,28 @@ class MachineForm
         tfSpeed.setLocation(200, 250);
         c.add(tfSpeed);
 
-        JLabel res = new JLabel("Status");
+        JLabel status = new JLabel("Status");
+        status.setFont(new Font("Arial", Font.PLAIN, 10));
+        status.setSize(100, 20);
+        status.setLocation(100, 300);
+        c.add(status);
+
+        statusLive = new JLabel("EMPTY");
+        statusLive.setFont(new Font("Arial", Font.PLAIN, 10));
+        statusLive.setSize(200, 20);
+        statusLive.setLocation(200, 300);
+        c.add(statusLive);
+
+        JLabel res = new JLabel("Connection");
         res.setFont(new Font("Arial", Font.PLAIN, 10));
         res.setSize(100, 20);
-        res.setLocation(100, 300);
+        res.setLocation(100, 350);
         c.add(res);
 
         resLive = new JLabel("Not connected");
         resLive.setFont(new Font("Arial", Font.PLAIN, 10));
         resLive.setSize(200, 20);
-        resLive.setLocation(200, 300);
+        resLive.setLocation(200, 350);
         c.add(resLive);
 
 
@@ -154,6 +166,14 @@ class MachineForm
 
     public void setFormObserver(FormObserver observer) {
         this.observer = observer;
+    }
+
+    public void setBusinessStatus(boolean isBusy) {
+        if (isBusy) {
+            statusLive.setText("BUSY");
+        } else {
+            statusLive.setText("EMPTY");
+        }
     }
 
     public interface FormObserver {

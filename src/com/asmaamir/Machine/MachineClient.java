@@ -14,6 +14,7 @@ public class MachineClient {
     Socket socket = null;
     private MachineForm form;
     private String name, ID, type, speed;
+    private boolean isBusy = false;
 
     public MachineClient() {
         form = new MachineForm();
@@ -58,6 +59,7 @@ public class MachineClient {
             System.exit(1);
         }
         try {
+
             String message, response;
             System.out.println("Connecting to server..");
             socket = new Socket(host, PORT);
@@ -80,6 +82,24 @@ public class MachineClient {
                     //System.out.println("\nSERVER> " + response);
                 } while (!message.equals("QUIT"));*/
             }
+            Thread t1 = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    do {
+                        String response = networkInput.nextLine();
+                        System.out.println(response);
+                        if (response.startsWith("opCode")) {
+                            if (response.startsWith("opCode:assignOrder")) {
+                                form.setBusinessStatus(true);
+                            } else if (response.startsWith("opCode:finishOrder")) {
+                                form.setBusinessStatus(false);
+                            }
+                        }
+                    } while (true);
+                }
+            });
+            t1.start();
+
         } catch (IOException ioEx) {
             ioEx.printStackTrace();
         }

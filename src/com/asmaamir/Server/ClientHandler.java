@@ -11,6 +11,7 @@ import java.net.Socket;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Scanner;
 
 class ClientHandler extends Thread {
@@ -33,6 +34,7 @@ class ClientHandler extends Thread {
             ioEx.printStackTrace();
         }
     }
+
 
     public static String getAliveMachines() {
         String result = "";
@@ -76,13 +78,47 @@ class ClientHandler extends Thread {
     }
 
     public void registerMachine(String data) {
-        Machine m = new Machine(data);
-        aliveMachines.add(m);
+        Machine machine = new Machine(data);
+        aliveMachines.add(machine);
+        machine.setObserver(new Machine.MachineObserver() {
+            @Override
+            public void onOrderDone(String id) {
+                output.println(constructRequest("finishOrder"));
+            }
+
+            @Override
+            public void onSetOrder(String id) {
+                output.println(constructRequest("assignOrder"));
+            }
+        });
     }
 
     public void registerOrder(String data) {
         Order order = new Order(data);
         activeOrders.add(order);
+    }
+
+    public void assignOrder() {
+        System.out.println("machines: " + aliveMachines.size() + " orders: " + activeOrders.size());
+        List<Order> toRemove = new ArrayList<Order>();
+        for (Machine machine : aliveMachines) {
+            if (!machine.isBusy()) {
+                for (Order order : activeOrders) {
+                    if (order.getType().equals(machine.getType())) {
+                        double quantity = Double.parseDouble(order.getDuration());
+                        double speed = Double.parseDouble(machine.getSpeed());
+                        double duration = quantity / speed; // minute
+                        machine.setBusyForWhile(duration * 60);
+                        //activeOrders.remove(order);
+                        toRemove.add(order);
+
+                        //output.println(constructRequest("assignOrder"));
+                    }
+                }
+            }
+        }
+        activeOrders.removeAll(toRemove);
+        System.out.println("machines: " + aliveMachines.size() + " orders: " + activeOrders.size());
     }
 
     public void parseMessage(String message) {
@@ -109,6 +145,11 @@ class ClientHandler extends Thread {
     public String constructResponse(int code, String data) {
         String res = "code:" + code;
         res += ",data:" + data;
+        return res;
+    }
+
+    public String constructRequest(String opCode) {
+        String res = "opCode:" + opCode;
         return res;
     }
 
@@ -192,6 +233,7 @@ class ClientHandler extends Thread {
                         String rawData = getData(received);
                         System.out.println(rawData);
                         registerOrder(rawData);
+                        assignOrder();
                         output.println(constructResponse(200, "order done"));
                     }
 
