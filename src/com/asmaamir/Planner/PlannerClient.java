@@ -1,5 +1,7 @@
 package com.asmaamir.Planner;
 
+import com.asmaamir.Planner.entities.Machine;
+import com.asmaamir.Planner.entities.Order;
 import com.asmaamir.Planner.ui.DashboardUI;
 import com.asmaamir.Planner.ui.LoginForm;
 import com.asmaamir.Planner.ui.OrderForm;
@@ -9,12 +11,14 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class PlannerClient {
     private static final int PORT = 1234;
     private static final int CLIENT_TYPE = 2;
     private static InetAddress host;
+    private static String types[] = {"CNC", "DOKUM", "KILIF", "KAPLAMA"};
     Socket socket = null;
     private String name;
     private String password;
@@ -80,10 +84,13 @@ public class PlannerClient {
             //System.out.println("\nSERVER> " + response);
             if (response.startsWith("code:200")) {//Set up stream for keyboard entry...
                 DashboardUI ui = new DashboardUI();
-                if (response.split(",")[1].split(":").length > 1) {
+                networkOutput.println(constructMessage("getAliveMachineIDs"));
+                response = networkInput.nextLine();
+
+                if (response.startsWith("code:200") && response.split(",")[1].split(":").length > 1) {
                     String[] aliveIDs = response.split(",")[1].split(":")[1].split("&");
                     ui.setAliveIDs(aliveIDs);
-                    System.out.println(response.split(",")[1]);
+                    //System.out.println(response.split(",")[1]);
                 }
 
 
@@ -91,41 +98,69 @@ public class PlannerClient {
                     @Override
                     public void onGetAliveMachinesClicked() {
                         networkOutput.println(constructMessage("getAliveMachines"));
-                        String[] result = networkInput.nextLine().split(",")[1].split(":")[1].split("&");
-                        String output = "";
-                        for (String str : result) {
-                            System.out.println(str);
-                            String[] temp = str.split(";");
-                            for (String s : temp) {
-                                output += s.split("\\?")[0] + ": ";
-                                output += s.split("\\?")[1];
-                                output += "\n";
+                        String response = networkInput.nextLine();
+                        System.out.println(response);
+                        if (response.split(",")[1].split(":").length > 1) {
+                            String[] result = response.split(",")[1].split(":")[1].split("&");
+                            String output = "";
+                            ArrayList<Machine> machines = new ArrayList<>();
+                            for (String str : result) {
+                                System.out.println(str);
+                                Machine machine = new Machine(str);
+                                machines.add(machine);
                             }
-                            output += "------------\n";
-                        }
-                        System.out.println("res:" + output);
+                            for (String type : types) {
+                                output += type + ":\n";
+                                for (Machine machine : machines) {
+                                    System.out.println(machine.getType() + "  " + type);
+                                    if (machine.getType().equals(type)) {
+                                        output += machine.toString();
+                                    }
+                                }
+                                output += "\n------------\n";
+                            }
 
-                        ui.setTextAreaContent(output);
+                            ui.setTextAreaContent(output);
+                        } else {
+                            ui.setTextAreaContent("No active machine");
+                        }
+                    }
+
+                    @Override
+                    public void onRefreshIDs() {
+                        networkOutput.println(constructMessage("getAliveMachineIDs"));
+                        String response = networkInput.nextLine();
+
+                        if (response.startsWith("code:200") && response.split(",")[1].split(":").length > 1) {
+                            String[] aliveIDs = response.split(",")[1].split(":")[1].split("&");
+                            ui.setAliveIDs(aliveIDs);
+                            System.out.println(response.split(",")[1]);
+                        }
                     }
 
                     @Override
                     public void onGetInfoByMachineClicked(String id) {
                         networkOutput.println(constructMessage("getInfoByMachineID", id));
-                        String[] result = networkInput.nextLine().split(",")[1].split(":")[1].split("&");
-                        String output = "";
-                        for (String str : result) {
-                            System.out.println(str);
-                            String[] temp = str.split(";");
-                            for (String s : temp) {
-                                output += s.split("\\?")[0] + ": ";
-                                output += s.split("\\?")[1];
-                                output += "\n";
+                        String response = networkInput.nextLine();
+                        if (response.split(",")[1].split(":").length > 1) {
+                            String[] result = response.split(",")[1].split(":")[1].split("&");
+                            String output = "";
+                            for (String str : result) {
+                                System.out.println(str);
+                                String[] temp = str.split(";");
+                                for (String s : temp) {
+                                    output += s.split("\\?")[0] + ": ";
+                                    output += s.split("\\?")[1];
+                                    output += "\n";
+                                }
+                                output += "------------\n";
                             }
-                            output += "------------\n";
-                        }
-                        System.out.println("res:" + output);
+                            System.out.println("res:" + output);
 
-                        ui.setTextAreaContent(output);
+                            ui.setTextAreaContent(output);
+                        } else {
+                            ui.setTextAreaContent("ID is invalid");
+                        }
                     }
 
                     @Override
@@ -135,22 +170,29 @@ public class PlannerClient {
                         networkOutput.println(constructMessage("getWaitingOrders"));
                         String response = networkInput.nextLine();
                         System.out.println(response);
-                        String[] result = response.split(",")[1].split(":")[1].split("&");
-                        String output = "";
-                        System.out.println("len: " + result.length);
-                        for (String str : result) {
-                            System.out.println(str);
-                            String[] temp = str.split(";");
-                            for (String s : temp) {
-                                output += s.split("\\?")[0] + ": ";
-                                output += s.split("\\?")[1];
-                                output += "\n";
+                        if (response.split(",")[1].split(":").length > 1) {
+                            String[] result = response.split(",")[1].split(":")[1].split("&");
+                            String output = "";
+                            ArrayList<Order> orders = new ArrayList<>();
+                            for (String str : result) {
+                                System.out.println(str);
+                                Order order = new Order(str);
+                                orders.add(order);
                             }
-                            output += "------------\n";
-                        }
-                        System.out.println("res:" + output);
+                            for (String type : types) {
+                                output += type + ":\n";
+                                for (Order order : orders) {
+                                    if (order.getType().equals(type)) {
+                                        output += order.toString();
+                                    }
+                                }
+                                output += "\n------------\n";
+                            }
 
-                        ui.setTextAreaContent(output);
+                            ui.setTextAreaContent(output);
+                        } else {
+                            ui.setTextAreaContent("No waiting order 🎉!");
+                        }
                     }
 
                     @Override
@@ -174,6 +216,7 @@ public class PlannerClient {
 
                     @Override
                     public void onDisconnectClicked() {
+                        networkOutput.println(constructMessage("disconnect"));
                         closeSocket();
                     }
                 });
@@ -185,8 +228,10 @@ public class PlannerClient {
                     //response = networkInput.nextLine();
                     //System.out.println("\nSERVER> " + response);
                 } while (!message.equals("QUIT"));*/
-            } else {
-                form.setResult(false);
+            } else if (response.startsWith("code:401")) {
+                form.setResult("Incorrect username or password");
+            } else if (response.startsWith("code:402")) {
+                form.setResult("User has already logged in");
             }
         } catch (IOException ioEx) {
             ioEx.printStackTrace();
@@ -200,8 +245,6 @@ public class PlannerClient {
     private void closeSocket() {
         try {
             System.out.println("\nClosing connection...");
-            PrintWriter networkOutput = new PrintWriter(socket.getOutputStream(), true);
-            networkOutput.println("QUIT");
             socket.close();
         } catch (IOException ioEx) {
             System.out.println("Unable to disconnect!");

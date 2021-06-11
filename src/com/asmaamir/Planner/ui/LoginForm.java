@@ -26,7 +26,7 @@ public class LoginForm extends JFrame
         c = getContentPane();
         c.setLayout(null);
 
-        JLabel title = new JLabel("Machine Type Client Form");
+        JLabel title = new JLabel("Planner Login Form");
         title.setFont(new Font("Arial", Font.PLAIN, 30));
         title.setSize(500, 30);
         title.setLocation(100, 30);
@@ -71,10 +71,8 @@ public class LoginForm extends JFrame
         setVisible(true);
     }
 
-    public void setResult(boolean res) {
-        if (!res) {
-            result.setText("Incorrect username or password");
-        }
+    public void setResult(String message) {
+        result.setText(message);
     }
 
     public void actionPerformed(ActionEvent e) {
