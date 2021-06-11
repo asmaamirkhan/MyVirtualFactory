@@ -15,6 +15,8 @@ public class MachineClient {
     private MachineForm form;
     private String name, ID, type, speed;
     private boolean isBusy = false;
+    private boolean isConnected = false;
+    private Thread workerThread;
 
     public MachineClient() {
         form = new MachineForm();
@@ -27,7 +29,10 @@ public class MachineClient {
             }
 
             @Override
-            public void onClose() {
+            public void onClose() throws IOException {
+                PrintWriter networkOutput = new PrintWriter(socket.getOutputStream(), true);
+                String message = constructMessage("disconnect");
+                networkOutput.println(message);
                 closeSocket();
             }
         });
@@ -51,6 +56,13 @@ public class MachineClient {
         return msg;
     }
 
+    public String constructMessage(String action) {
+        String msg = "type:" + CLIENT_TYPE;
+        msg += ",opCode:" + action;
+        msg += ",data:" + "null";
+        return msg;
+    }
+
     public void connect2Server() {
         try {
             host = InetAddress.getLocalHost();
@@ -69,9 +81,11 @@ public class MachineClient {
             networkOutput.println(message);
             response = networkInput.nextLine();
             //System.out.println("\nSERVER> " + response);
+            System.out.println(response);
             if (response.startsWith("code:")) {//Set up stream for keyboard entry...
                 form.setConnectionStatus("Connected");
                 System.out.println(response);
+                isConnected = true;
 
                 // Scanner userEntry = new Scanner(System.in);
                /* do {
@@ -82,10 +96,11 @@ public class MachineClient {
                     //System.out.println("\nSERVER> " + response);
                 } while (!message.equals("QUIT"));*/
             }
-            Thread t1 = new Thread(new Runnable() {
+            workerThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    do {
+                    while (networkInput.hasNextLine()) {
+                        System.out.println("conn " + isConnected);
                         String response = networkInput.nextLine();
                         System.out.println(response);
                         if (response.startsWith("opCode")) {
@@ -95,10 +110,10 @@ public class MachineClient {
                                 form.setBusinessStatus(false);
                             }
                         }
-                    } while (true);
+                    }
                 }
             });
-            t1.start();
+            workerThread.start();
 
         } catch (IOException ioEx) {
             ioEx.printStackTrace();
@@ -108,8 +123,6 @@ public class MachineClient {
     private void closeSocket() {
         try {
             System.out.println("\nClosing connection...");
-            PrintWriter networkOutput = new PrintWriter(socket.getOutputStream(), true);
-            networkOutput.println("QUIT");
             socket.close();
         } catch (IOException ioEx) {
             System.out.println("Unable to disconnect!");

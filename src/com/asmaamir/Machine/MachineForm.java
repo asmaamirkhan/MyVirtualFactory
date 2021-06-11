@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 
 
 class MachineForm
@@ -156,7 +157,11 @@ class MachineForm
             cbType.setSelectedIndex(0);
         } else if (e.getSource() == close) {
             resLive.setText("Not connected");
-            observer.onClose();
+            try {
+                observer.onClose();
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
         }
     }
 
@@ -179,6 +184,6 @@ class MachineForm
     public interface FormObserver {
         public void onSubmit(String name, String ID, String type, String speed);
 
-        public void onClose();
+        public void onClose() throws IOException;
     }
 }
