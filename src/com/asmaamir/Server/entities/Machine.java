@@ -102,7 +102,7 @@ public class Machine {
 
     @Override
     public String toString() {
-        return String.format("name?" + getName() + ";ID?" + getID() + ";type?" + getType() + ";speed?" + getSpeed());
+        return String.format("name?" + getName() + ";ID?" + getID() + ";type?" + getType() + ";speed?" + getSpeed() + ";isBusy?" + isBusy);
     }
 
     public interface MachineObserver {

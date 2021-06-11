@@ -20,7 +20,7 @@ public class ServerVirtualFactory {
         do {
             //Wait for client...
             Socket client = serverSocket.accept();
-            System.out.println("\nNew client accepted.");
+            System.out.println("New client accepted.");
             ClientHandler handler = new ClientHandler(client);
             handler.start();
 

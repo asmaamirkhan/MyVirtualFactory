@@ -2,6 +2,7 @@ package com.asmaamir.Server;
 
 import com.asmaamir.Server.entities.Machine;
 import com.asmaamir.Server.entities.Order;
+import com.asmaamir.Server.entities.User;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -17,12 +18,15 @@ import java.util.Scanner;
 class ClientHandler extends Thread {
     private static ArrayList<Machine> aliveMachines = new ArrayList<>();
     private static ArrayList<Order> activeOrders = new ArrayList<>();
+    private static ArrayList<User> onlineUsers = new ArrayList<>();
     private String SPLITTER = ",";
     private Socket client;
     private Scanner input;
     private PrintWriter output;
+    private boolean isClientAlive = true;
     private int type;
     private int aliveClients = 0;
+    private String ID;
 
     public ClientHandler(Socket socket) {
         //Set up reference to associated socket...
@@ -39,17 +43,19 @@ class ClientHandler extends Thread {
     public static String getAliveMachines() {
         String result = "";
         for (Machine machine : aliveMachines) {
-            System.out.println(machine.toString());
+            //System.out.println(machine.toString());
             result += machine.toString() + "&";
         }
-        result = result.substring(0, result.length() - 1);
+        if (result.length() > 0)
+            result = result.substring(0, result.length() - 1);
         return result;
     }
+
 
     public static String getAliveMachineIDs() {
         String result = "";
         for (Machine machine : aliveMachines) {
-            System.out.println(machine.toString());
+            //System.out.println(machine.toString());
             result += machine.getID() + "&";
         }
         if (result.length() > 0)
@@ -60,7 +66,7 @@ class ClientHandler extends Thread {
     public static String getWaitingOrders() {
         String result = "";
         for (Order order : activeOrders) {
-            System.out.println(order.toString());
+            //System.out.println(order.toString());
             result += order.toString() + "&";
         }
         if (result.length() > 0)
@@ -80,10 +86,12 @@ class ClientHandler extends Thread {
     public void registerMachine(String data) {
         Machine machine = new Machine(data);
         aliveMachines.add(machine);
+        ID = machine.getID();
         machine.setObserver(new Machine.MachineObserver() {
             @Override
             public void onOrderDone(String id) {
                 output.println(constructRequest("finishOrder"));
+                assignOrder();
             }
 
             @Override
@@ -91,6 +99,7 @@ class ClientHandler extends Thread {
                 output.println(constructRequest("assignOrder"));
             }
         });
+        assignOrder();
     }
 
     public void registerOrder(String data) {
@@ -99,26 +108,27 @@ class ClientHandler extends Thread {
     }
 
     public void assignOrder() {
-        System.out.println("machines: " + aliveMachines.size() + " orders: " + activeOrders.size());
-        List<Order> toRemove = new ArrayList<Order>();
+        List<Order> ordersToRemove = new ArrayList<Order>();
+        List<Machine> machinesToRemove = new ArrayList<Machine>();
         for (Machine machine : aliveMachines) {
             if (!machine.isBusy()) {
                 for (Order order : activeOrders) {
+                    if (ordersToRemove.contains(order) || machine.isBusy())
+                        continue;
                     if (order.getType().equals(machine.getType())) {
                         double quantity = Double.parseDouble(order.getDuration());
                         double speed = Double.parseDouble(machine.getSpeed());
                         double duration = quantity / speed; // minute
                         machine.setBusyForWhile(duration * 60);
-                        //activeOrders.remove(order);
-                        toRemove.add(order);
-
-                        //output.println(constructRequest("assignOrder"));
+                        ordersToRemove.add(order);
+                        machinesToRemove.add(machine);
+                        break;
                     }
                 }
             }
         }
-        activeOrders.removeAll(toRemove);
-        System.out.println("machines: " + aliveMachines.size() + " orders: " + activeOrders.size());
+        activeOrders.removeAll(ordersToRemove);
+        //aliveMachines.removeAll(machinesToRemove);
     }
 
     public void parseMessage(String message) {
@@ -174,6 +184,42 @@ class ClientHandler extends Thread {
         return data[1];
     }
 
+    public boolean logUser(String data) {
+        String name = data.split(";")[0].split("\\?")[1];
+        for (User user : onlineUsers) {
+            if (user.getName().equals(name)) {
+                return false;
+            }
+        }
+        User user = new User(name);
+        onlineUsers.add(user);
+        ID = name;
+        return true;
+    }
+
+    public void removeUser() {
+        List<User> toRemove = new ArrayList<User>();
+        for (User user : onlineUsers) {
+            if (user.getName().equals(ID)) {
+                toRemove.add(user);
+                break;
+            }
+        }
+        onlineUsers.removeAll(toRemove);
+    }
+
+    public void removeMachine() {
+        List<Machine> toRemove = new ArrayList<Machine>();
+
+        for (Machine machine : aliveMachines) {
+            if (machine.getID().equals(ID)) {
+                toRemove.add(machine);
+                break;
+            }
+        }
+        aliveMachines.removeAll(toRemove);
+    }
+
     public boolean verifyUser(String data) {
         String name = data.split(";")[0].split("\\?")[1];
         String password = data.split(";")[1].split("\\?")[1];
@@ -206,20 +252,29 @@ class ClientHandler extends Thread {
                 if (clientType == 1) { // machine
                     if (opCode.equals("register")) {
                         String rawData = getData(received);
-                        registerMachine(rawData);
                         output.println(constructResponse(200, "" + clientType));
+                        registerMachine(rawData);
+                    } else if (opCode.equals("disconnect")) {
+                        removeMachine();
+                        closeConnection();
                     }
                 } else if (clientType == 2) { //planner
                     if (opCode.equals("login")) {
                         String rawData = getData(received);
-                        System.out.println("Auth: " + verifyUser(rawData));
                         if (verifyUser(rawData)) {
-                            output.println(constructResponse(200, "" + getAliveMachineIDs()));
+                            if (logUser(rawData)) {
+                                output.println(constructResponse(200, "null"));
+                            } else {
+                                output.println(constructResponse(402, "user has already logged in"));
+                                closeConnection();
+                            }
                         } else {
-                            output.println(constructResponse(401, "" + clientType));
+                            output.println(constructResponse(401, "wrong pass"));
+                            closeConnection();
                         }
+                    } else if (opCode.equals("getAliveMachineIDs")) {
+                        output.println(constructResponse(200, getAliveMachineIDs()));
                     } else if (opCode.equals("getAliveMachines")) {
-                        System.out.println(constructResponse(200, getAliveMachines()));
                         output.println(constructResponse(200, getAliveMachines()));
                     } else if (opCode.equals("getInfoByMachineID")) {
                         String id = getData(received);
@@ -229,12 +284,13 @@ class ClientHandler extends Thread {
                         String result = getWaitingOrders();
                         output.println(constructResponse(200, result));
                     } else if (opCode.equals("setNewOrder")) {
-                        System.out.println(received);
                         String rawData = getData(received);
-                        System.out.println(rawData);
                         registerOrder(rawData);
                         assignOrder();
                         output.println(constructResponse(200, "order done"));
+                    } else if (opCode.equals("disconnect")) {
+                        removeUser();
+                        closeConnection();
                     }
 
                 }
@@ -245,8 +301,13 @@ class ClientHandler extends Thread {
             }
 
             //Repeat above until 'QUIT' sent by client...
-        } while (!received.equals("QUIT"));
+        } while (isClientAlive);
 
+
+    }
+
+    public void closeConnection() {
+        isClientAlive = false;
         try {
             if (client != null) {
                 System.out.println("Closing down connection...");
