@@ -20,6 +20,7 @@ class ClientHandler extends Thread {
     private final static String FIELD_SPLITTER = ":";
     private final static String VALUE_SPLITTER = "?";
     private final static String ARRAY_SPLITTER = ";";
+    private final static String RECORD_SPLITTER = "&";
     private static ArrayList<Machine> aliveMachines = new ArrayList<>();
     private static ArrayList<Order> activeOrders = new ArrayList<>();
     private static ArrayList<User> onlineUsers = new ArrayList<>();
@@ -43,7 +44,7 @@ class ClientHandler extends Thread {
     public static String getAliveMachines() {
         String result = "";
         for (Machine machine : aliveMachines) {
-            result += machine.toString() + "&";
+            result += machine.toString() + RECORD_SPLITTER;
         }
         if (result.length() > 0)
             result = result.substring(0, result.length() - 1);
@@ -54,7 +55,7 @@ class ClientHandler extends Thread {
     public static String getAliveMachineIDs() {
         String result = "";
         for (Machine machine : aliveMachines) {
-            result += machine.getID() + "&";
+            result += machine.getID() + RECORD_SPLITTER;
         }
         if (result.length() > 0)
             result = result.substring(0, result.length() - 1);
@@ -64,7 +65,7 @@ class ClientHandler extends Thread {
     public static String getWaitingOrders() {
         String result = "";
         for (Order order : activeOrders) {
-            result += order.toString() + "&";
+            result += order.toString() + RECORD_SPLITTER;
         }
         if (result.length() > 0)
             result = result.substring(0, result.length() - 1);
@@ -144,6 +145,39 @@ class ClientHandler extends Thread {
         if (!parts[1].startsWith("opCode:"))
             return false;
         if (!parts[2].startsWith("type:"))
+            return false;
+        return true;
+    }
+
+    public boolean isValidMachineInfo(String data) {
+        String[] values = data.split(ARRAY_SPLITTER);
+        if (values.length != 4)
+            return false;
+        Arrays.sort(values);
+        // id, name, speed, type
+        if (!values[0].startsWith("id?"))
+            return false;
+        if (!values[1].startsWith("name?"))
+            return false;
+        if (!values[2].startsWith("speed?"))
+            return false;
+        if (!values[3].startsWith("type?"))
+            return false;
+        return true;
+    }
+
+    public boolean isValidOrderInfo(String data) {
+
+        String[] values = data.split(ARRAY_SPLITTER);
+        if (values.length != 3)
+            return false;
+        Arrays.sort(values);
+        // id, quantity, type
+        if (!values[0].startsWith("id?"))
+            return false;
+        if (!values[1].startsWith("quantity?"))
+            return false;
+        if (!values[2].startsWith("type?"))
             return false;
         return true;
     }
@@ -244,14 +278,22 @@ class ClientHandler extends Thread {
         String received;
         do {
             received = input.nextLine();
+            System.out.println(received);
             if (isValidMessage(received)) {
                 int clientType = getClientType(received);
                 String opCode = getOpcode(received);
                 if (clientType == 1) { // machine
                     if (opCode.equals("register")) {
+                        System.out.println(received);
                         String rawData = getData(received);
-                        output.println(constructResponse(200, "null"));
-                        registerMachine(rawData);
+                        System.out.println(rawData);
+                        if (isValidMachineInfo(rawData)) {
+                            output.println(constructResponse(200, "null"));
+                            registerMachine(rawData);
+                        } else {
+                            System.out.println("Invalid machine info");
+                            output.println(constructResponse(403, "Invalid machine info"));
+                        }
                     } else if (opCode.equals("disconnect")) {
                         removeMachine();
                         closeConnection();
@@ -263,7 +305,7 @@ class ClientHandler extends Thread {
                             if (logUser(rawData)) {
                                 output.println(constructResponse(200, "null"));
                             } else {
-                                output.println(constructResponse(402, "user has already logged in"));
+                                output.println(constructResponse(403, "user has already logged in"));
                                 closeConnection();
                             }
                         } else {
@@ -283,9 +325,15 @@ class ClientHandler extends Thread {
                         output.println(constructResponse(200, result));
                     } else if (opCode.equals("setNewOrder")) {
                         String rawData = getData(received);
-                        registerOrder(rawData);
-                        assignOrder();
-                        output.println(constructResponse(200, "order done"));
+                        if (isValidOrderInfo(rawData)) {
+                            registerOrder(rawData);
+                            assignOrder();
+                            output.println(constructResponse(200, "order done"));
+                        } else {
+
+                            System.out.println("Invalid order info");
+                            output.println(constructResponse(403, "Invalid order info"));
+                        }
                     } else if (opCode.equals("disconnect")) {
                         removeUser();
                         closeConnection();

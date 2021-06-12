@@ -81,9 +81,8 @@ public class MachineClient {
             networkOutput.println(message);
             response = networkInput.nextLine();
             System.out.println(response);
-            if (response.startsWith("code:")) {
+            if (response.startsWith("code:200")) {
                 form.setConnectionStatus("Connected");
-                System.out.println(response);
                 isConnected = true;
             }
             workerThread = new Thread(new Runnable() {

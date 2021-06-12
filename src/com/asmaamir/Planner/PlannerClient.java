@@ -125,11 +125,11 @@ public class PlannerClient {
                     public void onRefreshIDs() {
                         networkOutput.println(constructMessage("getAliveMachineIDs"));
                         String response = networkInput.nextLine();
-
+                        System.out.println(response);
                         if (response.startsWith("code:200") && response.split(",")[1].split(":").length > 1) {
                             String[] aliveIDs = response.split(",")[1].split(":")[1].split("&");
                             ui.setAliveIDs(aliveIDs);
-                            System.out.println(response.split(",")[1]);
+                            //System.out.println(response.split(",")[1]);
                         }
                     }
 
@@ -137,6 +137,7 @@ public class PlannerClient {
                     public void onGetInfoByMachineClicked(String id) {
                         networkOutput.println(constructMessage("getInfoByMachineID", id));
                         String response = networkInput.nextLine();
+                        System.out.println(response);
                         if (response.split(",")[1].split(":").length > 1) {
                             String[] result = response.split(",")[1].split(":")[1].split("&");
                             String output = "";
