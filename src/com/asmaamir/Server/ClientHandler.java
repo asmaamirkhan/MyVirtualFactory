@@ -16,20 +16,20 @@ import java.util.List;
 import java.util.Scanner;
 
 class ClientHandler extends Thread {
+    private final static String DATA_SPLITTER = ",";
+    private final static String FIELD_SPLITTER = ":";
+    private final static String VALUE_SPLITTER = "?";
+    private final static String ARRAY_SPLITTER = ";";
     private static ArrayList<Machine> aliveMachines = new ArrayList<>();
     private static ArrayList<Order> activeOrders = new ArrayList<>();
     private static ArrayList<User> onlineUsers = new ArrayList<>();
-    private String SPLITTER = ",";
     private Socket client;
     private Scanner input;
     private PrintWriter output;
     private boolean isClientAlive = true;
-    private int type;
-    private int aliveClients = 0;
     private String ID;
 
     public ClientHandler(Socket socket) {
-        //Set up reference to associated socket...
         client = socket;
         try {
             input = new Scanner(client.getInputStream());
@@ -43,7 +43,6 @@ class ClientHandler extends Thread {
     public static String getAliveMachines() {
         String result = "";
         for (Machine machine : aliveMachines) {
-            //System.out.println(machine.toString());
             result += machine.toString() + "&";
         }
         if (result.length() > 0)
@@ -55,7 +54,6 @@ class ClientHandler extends Thread {
     public static String getAliveMachineIDs() {
         String result = "";
         for (Machine machine : aliveMachines) {
-            //System.out.println(machine.toString());
             result += machine.getID() + "&";
         }
         if (result.length() > 0)
@@ -66,7 +64,6 @@ class ClientHandler extends Thread {
     public static String getWaitingOrders() {
         String result = "";
         for (Order order : activeOrders) {
-            //System.out.println(order.toString());
             result += order.toString() + "&";
         }
         if (result.length() > 0)
@@ -109,7 +106,6 @@ class ClientHandler extends Thread {
 
     public void assignOrder() {
         List<Order> ordersToRemove = new ArrayList<Order>();
-        List<Machine> machinesToRemove = new ArrayList<Machine>();
         for (Machine machine : aliveMachines) {
             if (!machine.isBusy()) {
                 for (Order order : activeOrders) {
@@ -121,25 +117,23 @@ class ClientHandler extends Thread {
                         double duration = quantity / speed; // minute
                         machine.setBusyForWhile(duration * 60);
                         ordersToRemove.add(order);
-                        machinesToRemove.add(machine);
                         break;
                     }
                 }
             }
         }
         activeOrders.removeAll(ordersToRemove);
-        //aliveMachines.removeAll(machinesToRemove);
     }
 
     public void parseMessage(String message) {
-        String[] parts = message.split(SPLITTER);
+        String[] parts = message.split(DATA_SPLITTER);
         for (int i = 0; i < parts.length; i++) {
             System.out.println(parts[i]);
         }
     }
 
     public boolean isValidMessage(String message) {
-        String[] parts = message.split(SPLITTER);
+        String[] parts = message.split(DATA_SPLITTER);
         if (parts.length != 3)
             return false;
         Arrays.sort(parts);
@@ -164,28 +158,28 @@ class ClientHandler extends Thread {
     }
 
     public int getClientType(String message) {
-        String[] parts = message.split(SPLITTER);
+        String[] parts = message.split(DATA_SPLITTER);
         Arrays.sort(parts);
-        String[] data = parts[2].split(":");
+        String[] data = parts[2].split(FIELD_SPLITTER);
         return Integer.parseInt(data[1]);
     }
 
     public String getOpcode(String message) {
-        String[] parts = message.split(SPLITTER);
+        String[] parts = message.split(DATA_SPLITTER);
         Arrays.sort(parts);
-        String[] data = parts[1].split(":");
+        String[] data = parts[1].split(FIELD_SPLITTER);
         return data[1];
     }
 
     public String getData(String message) {
-        String[] parts = message.split(SPLITTER);
+        String[] parts = message.split(DATA_SPLITTER);
         Arrays.sort(parts);
-        String[] data = parts[0].split(":");
+        String[] data = parts[0].split(FIELD_SPLITTER);
         return data[1];
     }
 
     public boolean logUser(String data) {
-        String name = data.split(";")[0].split("\\?")[1];
+        String name = data.split(ARRAY_SPLITTER)[0].split("\\?")[1];
         for (User user : onlineUsers) {
             if (user.getName().equals(name)) {
                 return false;
@@ -221,8 +215,8 @@ class ClientHandler extends Thread {
     }
 
     public boolean verifyUser(String data) {
-        String name = data.split(";")[0].split("\\?")[1];
-        String password = data.split(";")[1].split("\\?")[1];
+        String name = data.split(ARRAY_SPLITTER)[0].split("\\?")[1];
+        String password = data.split(ARRAY_SPLITTER)[1].split("\\?")[1];
         try {
             URL path = ClientHandler.class.getResource("admins.txt");
             File file = new File(path.getFile());
@@ -230,7 +224,7 @@ class ClientHandler extends Thread {
             input = new Scanner(file);
 
             while (input.hasNextLine()) {
-                String[] line = input.nextLine().split(";");
+                String[] line = input.nextLine().split(ARRAY_SPLITTER);
                 if (line[0].equals(name) && line[1].equals(password)) {
                     return true;
                 }
@@ -246,13 +240,12 @@ class ClientHandler extends Thread {
         do {
             received = input.nextLine();
             if (isValidMessage(received)) {
-                //parseMessage(received);
                 int clientType = getClientType(received);
                 String opCode = getOpcode(received);
                 if (clientType == 1) { // machine
                     if (opCode.equals("register")) {
                         String rawData = getData(received);
-                        output.println(constructResponse(200, "" + clientType));
+                        output.println(constructResponse(200, "null"));
                         registerMachine(rawData);
                     } else if (opCode.equals("disconnect")) {
                         removeMachine();
@@ -294,16 +287,11 @@ class ClientHandler extends Thread {
                     }
 
                 }
-                //output.println(constructResponse(200, "" + clientType));
 
             } else {
                 output.println(constructResponse(404, null));
             }
-
-            //Repeat above until 'QUIT' sent by client...
         } while (isClientAlive);
-
-
     }
 
     public void closeConnection() {

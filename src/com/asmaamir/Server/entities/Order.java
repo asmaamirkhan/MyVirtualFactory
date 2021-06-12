@@ -1,20 +1,17 @@
 package com.asmaamir.Server.entities;
 
 public class Order {
+    private final static String VALUE_SPLITTER = "\\?";
+    private final static String ARRAY_SPLITTER = ";";
     String id;
     String type;
     String quantity;
 
     public Order(String data) {
-        String[] split = data.split(";");
-        //Arrays.sort(split);
-        //  duration id type
+        String[] split = data.split(ARRAY_SPLITTER);
         System.out.println(data);
-        /*setQuantity(split[0].split("\\?")[1]);
-        setId(split[1].split("\\?")[1]);
-        setType(split[2].split("\\?")[1]);*/
         for (String part : split) {
-            String[] pair = part.split("\\?");
+            String[] pair = part.split(VALUE_SPLITTER);
             if (pair[0].equals("type"))
                 this.type = pair[1];
             else if (pair[0].equals("id"))

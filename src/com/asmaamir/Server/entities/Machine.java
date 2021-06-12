@@ -5,6 +5,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class Machine {
+    private final static String VALUE_SPLITTER = "\\?";
+    private final static String ARRAY_SPLITTER = ";";
     public MachineObserver observer;
     private String name;
     private String ID;
@@ -15,9 +17,9 @@ public class Machine {
 
     public Machine(String data) {
         System.out.println(data);
-        String[] split = data.split(";");
+        String[] split = data.split(ARRAY_SPLITTER);
         for (String part : split) {
-            String[] pair = part.split("\\?");
+            String[] pair = part.split(VALUE_SPLITTER);
             if (pair[0].equals("name"))
                 this.name = pair[1];
             else if (pair[0].equals("id"))
