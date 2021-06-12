@@ -53,13 +53,13 @@ public class Machine {
     public void setBusyForWhile(double duration) {
         this.isBusy = true;
         int delay = (int) duration * 1000;
-        System.out.println("Order is assigned: " + duration + " sec");
+        System.out.println("Machine ID: " + getID() + ", order is assigned: " + duration + " sec");
         observer.onSetOrder(getID());
         Timer timer = new Timer(delay, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 setBusy(false);
-                System.out.println("Order is done");
+                System.out.println("Machine ID: " + getID() + ", order is done");
                 observer.onOrderDone(getID());
             }
         });

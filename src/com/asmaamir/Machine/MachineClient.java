@@ -80,21 +80,11 @@ public class MachineClient {
             message = String.valueOf(constructMessage());
             networkOutput.println(message);
             response = networkInput.nextLine();
-            //System.out.println("\nSERVER> " + response);
             System.out.println(response);
-            if (response.startsWith("code:")) {//Set up stream for keyboard entry...
+            if (response.startsWith("code:")) {
                 form.setConnectionStatus("Connected");
                 System.out.println(response);
                 isConnected = true;
-
-                // Scanner userEntry = new Scanner(System.in);
-               /* do {
-                    //System.out.print("Enter message ('QUIT' to exit): ");
-                    //message = userEntry.nextLine();
-                    //networkOutput.println(message);
-                    //response = networkInput.nextLine();
-                    //System.out.println("\nSERVER> " + response);
-                } while (!message.equals("QUIT"));*/
             }
             workerThread = new Thread(new Runnable() {
                 @Override

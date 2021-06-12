@@ -32,7 +32,6 @@ public class PlannerClient {
                 System.out.println(name + " " + password);
                 initClient(name, password);
                 connect2Server();
-
             }
         });
     }
@@ -81,7 +80,7 @@ public class PlannerClient {
             message = constructLoginMessage();
             networkOutput.println(message);
             response = networkInput.nextLine();
-            if (response.startsWith("code:200")) {//Set up stream for keyboard entry...
+            if (response.startsWith("code:200")) {
                 DashboardUI ui = new DashboardUI();
                 networkOutput.println(constructMessage("getAliveMachineIDs"));
                 response = networkInput.nextLine();

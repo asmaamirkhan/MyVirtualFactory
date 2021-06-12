@@ -83,6 +83,7 @@ class ClientHandler extends Thread {
     public void registerMachine(String data) {
         Machine machine = new Machine(data);
         aliveMachines.add(machine);
+        System.out.println("Machine with ID: " + machine.getID() + " has been registered");
         ID = machine.getID();
         machine.setObserver(new Machine.MachineObserver() {
             @Override
@@ -102,6 +103,7 @@ class ClientHandler extends Thread {
     public void registerOrder(String data) {
         Order order = new Order(data);
         activeOrders.add(order);
+        System.out.println("Order with ID: " + order.getId() + " has been registered");
     }
 
     public void assignOrder() {
@@ -188,6 +190,7 @@ class ClientHandler extends Thread {
         User user = new User(name);
         onlineUsers.add(user);
         ID = name;
+        System.out.println("User " + name + " has logged in");
         return true;
     }
 
@@ -196,6 +199,7 @@ class ClientHandler extends Thread {
         for (User user : onlineUsers) {
             if (user.getName().equals(ID)) {
                 toRemove.add(user);
+                System.out.println("User " + user.getName() + " has logged out");
                 break;
             }
         }
@@ -208,6 +212,7 @@ class ClientHandler extends Thread {
         for (Machine machine : aliveMachines) {
             if (machine.getID().equals(ID)) {
                 toRemove.add(machine);
+                System.out.println("Machine with ID: " + machine.getID() + " has been removed");
                 break;
             }
         }
