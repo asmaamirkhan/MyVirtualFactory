@@ -125,14 +125,12 @@ public class MachineClient {
                 form.setConnectionStatus("Connected");
                 isConnected = true;
             }
-            System.out.println("esma");
             workerThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    System.out.println("asmaa");
-                    System.out.println(networkInput.hasNextLine());
-                    while (true) {
-                        System.out.println("conn " + isConnected);
+                    //System.out.println(networkInput.hasNextLine());
+                    while (networkInput.hasNextLine()) {
+                        //System.out.println("conn " + isConnected);
                         String response = networkInput.nextLine();
                         System.out.println(response);
                         if (response.startsWith("opCode")) {

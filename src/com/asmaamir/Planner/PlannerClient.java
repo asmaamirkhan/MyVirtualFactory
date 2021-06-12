@@ -214,7 +214,7 @@ public class PlannerClient {
                 });
             } else if (response.startsWith("code:401")) {
                 form.setResult("Incorrect username or password");
-            } else if (response.startsWith("code:402")) {
+            } else if (response.startsWith("code:403")) {
                 form.setResult("User has already logged in");
             }
         } catch (IOException ioEx) {
