@@ -294,7 +294,7 @@ class ClientHandler extends Thread {
                 }
 
             } else {
-                output.println(constructResponse(404, null));
+                output.println(constructResponse(400, "Invalid request"));
             }
         } while (isClientAlive);
     }
