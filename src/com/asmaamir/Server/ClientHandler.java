@@ -89,13 +89,14 @@ class ClientHandler extends Thread {
         machine.setObserver(new Machine.MachineObserver() {
             @Override
             public void onOrderDone(String id) {
-                output.println(constructRequest("finishOrder"));
+                //output.println(constructRequest("finishOrder", "null"));
                 assignOrder();
             }
 
             @Override
-            public void onSetOrder(String id) {
-                output.println(constructRequest("assignOrder"));
+            public void onSetOrder(String id, double duration) {
+                System.out.println();
+                output.println(constructRequest("assignOrder", "duration?" + duration));
             }
         });
         assignOrder();
@@ -119,6 +120,7 @@ class ClientHandler extends Thread {
                         double speed = Double.parseDouble(machine.getSpeed());
                         double duration = quantity / speed; // minute
                         machine.setBusyForWhile(duration * 60);
+                        machine.setBusy(true);
                         ordersToRemove.add(order);
                         break;
                     }
@@ -188,8 +190,9 @@ class ClientHandler extends Thread {
         return res;
     }
 
-    public String constructRequest(String opCode) {
+    public String constructRequest(String opCode, String data) {
         String res = "opCode:" + opCode;
+        res += ",data:" + data;
         return res;
     }
 
@@ -293,6 +296,12 @@ class ClientHandler extends Thread {
                         } else {
                             System.out.println("Invalid machine info");
                             output.println(constructResponse(403, "Invalid machine info"));
+                        }
+                    } else if (opCode.equals("finishOrder")) {
+                        for (Machine machine : aliveMachines) {
+                            if (machine.getID().equals(ID)) {
+                                machine.setBusy(false);
+                            }
                         }
                     } else if (opCode.equals("disconnect")) {
                         removeMachine();

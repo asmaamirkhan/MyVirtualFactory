@@ -1,9 +1,5 @@
 package com.asmaamir.Server.entities;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
 public class Machine {
     private final static String VALUE_SPLITTER = "\\?";
     private final static String ARRAY_SPLITTER = ";";
@@ -47,6 +43,9 @@ public class Machine {
 
     public void setBusy(boolean busy) {
         isBusy = busy;
+        if (!busy) {
+            observer.onOrderDone(getID());
+        }
     }
 
     // duration by seconds
@@ -54,8 +53,8 @@ public class Machine {
         this.isBusy = true;
         int delay = (int) duration * 1000;
         System.out.println("Machine ID: " + getID() + ", order is assigned: " + duration + " sec");
-        observer.onSetOrder(getID());
-        Timer timer = new Timer(delay, new ActionListener() {
+        observer.onSetOrder(getID(), duration);
+        /*Timer timer = new Timer(delay, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 setBusy(false);
@@ -64,7 +63,7 @@ public class Machine {
             }
         });
         timer.setRepeats(false);
-        timer.start();
+        timer.start();*/
     }
 
     public String getName() {
@@ -115,7 +114,7 @@ public class Machine {
     public interface MachineObserver {
         public void onOrderDone(String id);
 
-        public void onSetOrder(String id);
+        public void onSetOrder(String id, double duration);
     }
 }
 
