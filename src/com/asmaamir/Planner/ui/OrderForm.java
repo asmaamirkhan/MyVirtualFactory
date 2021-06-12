@@ -57,7 +57,7 @@ public class OrderForm extends JFrame
         cbType.setLocation(200, 200);
         c.add(cbType);
 
-        JLabel speed = new JLabel("Duration");
+        JLabel speed = new JLabel("Quantity");
         speed.setFont(new Font("Arial", Font.PLAIN, 20));
         speed.setSize(100, 20);
         speed.setLocation(100, 250);
@@ -96,6 +96,6 @@ public class OrderForm extends JFrame
     }
 
     public interface FormObserver {
-        public void onSubmit(String id, String type, String duration);
+        public void onSubmit(String id, String type, String quantity);
     }
 }

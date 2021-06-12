@@ -116,7 +116,7 @@ class ClientHandler extends Thread {
                     if (ordersToRemove.contains(order) || machine.isBusy())
                         continue;
                     if (order.getType().equals(machine.getType())) {
-                        double quantity = Double.parseDouble(order.getDuration());
+                        double quantity = Double.parseDouble(order.getQuantity());
                         double speed = Double.parseDouble(machine.getSpeed());
                         double duration = quantity / speed; // minute
                         machine.setBusyForWhile(duration * 60);

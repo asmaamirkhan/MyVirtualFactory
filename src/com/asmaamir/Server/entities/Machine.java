@@ -3,7 +3,6 @@ package com.asmaamir.Server.entities;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Arrays;
 
 public class Machine {
     public MachineObserver observer;
@@ -15,15 +14,21 @@ public class Machine {
 
 
     public Machine(String data) {
-        String[] split = data.split(";");
-        Arrays.sort(split);
-        //  id name speed type
         System.out.println(data);
-        setID(split[0].split("\\?")[1]);
-        setName(split[1].split("\\?")[1]);
-        setSpeed(split[2].split("\\?")[1]);
-        setType(split[3].split("\\?")[1]);
-        this.isBusy = false;
+        String[] split = data.split(";");
+        for (String part : split) {
+            String[] pair = part.split("\\?");
+            if (pair[0].equals("name"))
+                this.name = pair[1];
+            else if (pair[0].equals("id"))
+                this.ID = pair[1];
+            else if (pair[0].equals("type"))
+                this.type = pair[1];
+            else if (pair[0].equals("speed"))
+                this.speed = pair[1];
+            else if (pair[0].equals("isBusy"))
+                this.setBusy(false);
+        }
     }
 
     public Machine(String name, String ID, String type, String speed) {

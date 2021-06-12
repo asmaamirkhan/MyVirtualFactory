@@ -19,7 +19,7 @@ public class Order {
                 this.type = pair[1];
             else if (pair[0].equals("ID"))
                 this.id = pair[1];
-            else if (pair[0].equals("duration"))
+            else if (pair[0].equals("quantity"))
                 this.quantity = pair[1];
         }
     }

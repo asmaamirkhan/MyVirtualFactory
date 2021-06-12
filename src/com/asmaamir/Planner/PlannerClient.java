@@ -81,7 +81,6 @@ public class PlannerClient {
             message = constructLoginMessage();
             networkOutput.println(message);
             response = networkInput.nextLine();
-            //System.out.println("\nSERVER> " + response);
             if (response.startsWith("code:200")) {//Set up stream for keyboard entry...
                 DashboardUI ui = new DashboardUI();
                 networkOutput.println(constructMessage("getAliveMachineIDs"));
@@ -90,7 +89,6 @@ public class PlannerClient {
                 if (response.startsWith("code:200") && response.split(",")[1].split(":").length > 1) {
                     String[] aliveIDs = response.split(",")[1].split(":")[1].split("&");
                     ui.setAliveIDs(aliveIDs);
-                    //System.out.println(response.split(",")[1]);
                 }
 
 
@@ -105,14 +103,12 @@ public class PlannerClient {
                             String output = "";
                             ArrayList<Machine> machines = new ArrayList<>();
                             for (String str : result) {
-                                System.out.println(str);
                                 Machine machine = new Machine(str);
                                 machines.add(machine);
                             }
                             for (String type : types) {
                                 output += type + ":\n";
                                 for (Machine machine : machines) {
-                                    System.out.println(machine.getType() + "  " + type);
                                     if (machine.getType().equals(type)) {
                                         output += machine.toString();
                                     }
@@ -165,8 +161,6 @@ public class PlannerClient {
 
                     @Override
                     public void onGetWaitingOrdersClicked() {
-                        //networkOutput.println(constructMessage("getWaitingOrders"));
-                        //System.out.println("res:" + networkInput.nextLine());
                         networkOutput.println(constructMessage("getWaitingOrders"));
                         String response = networkInput.nextLine();
                         System.out.println(response);
@@ -198,14 +192,12 @@ public class PlannerClient {
                     @Override
                     public void onSetNewOrderClicked() {
                         OrderForm orderForm = new OrderForm();
-                        //openForm();
-                        //System.out.println("res:" + networkInput.nextLine());
                         orderForm.setFormObserver(new OrderForm.FormObserver() {
                             @Override
-                            public void onSubmit(String id, String type, String duration) {
+                            public void onSubmit(String id, String type, String quantity) {
                                 String data = "id?" + id;
                                 data += ";type?" + type;
-                                data += ";duration?" + duration;
+                                data += ";quantity?" + quantity;
                                 networkOutput.println(constructMessage("setNewOrder", data));
                                 // TODO: parse response
                                 String response = networkInput.nextLine();
@@ -220,14 +212,6 @@ public class PlannerClient {
                         closeSocket();
                     }
                 });
-                // Scanner userEntry = new Scanner(System.in);
-               /* do {
-                    //System.out.print("Enter message ('QUIT' to exit): ");
-                    //message = userEntry.nextLine();
-                    //networkOutput.println(message);
-                    //response = networkInput.nextLine();
-                    //System.out.println("\nSERVER> " + response);
-                } while (!message.equals("QUIT"));*/
             } else if (response.startsWith("code:401")) {
                 form.setResult("Incorrect username or password");
             } else if (response.startsWith("code:402")) {
@@ -238,9 +222,6 @@ public class PlannerClient {
         }
     }
 
-    private void openForm() {
-        OrderForm orderForm = new OrderForm();
-    }
 
     private void closeSocket() {
         try {
